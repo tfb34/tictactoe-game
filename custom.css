@@ -1,0 +1,25 @@
+body{
+	background-color: blue;
+}
+
+#board{
+	background-color:purple;
+	margin-left: 30%;
+}
+#board::after{
+	content:"";
+	clear: both;
+	display: table;
+}
+[id^=cell]{
+	height: 100px;
+	width:100px;
+	background-color: yellow;
+	border : 1px solid black;
+	float: left;
+}
+.row::after{
+    content: "";	
+    display: table;
+    clear: both;
+}
