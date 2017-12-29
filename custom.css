@@ -1,10 +1,15 @@
 body{
-	background-color: blue;
+	background-color: #001b5c;
 }
-
+#title{
+    font-size: 50px;
+    color: white;
+    text-align: center;
+    font-family: 'Indie Flower', cursive;
+    margin-bottom: 0;
+}
 #board{
-	background-color:purple;
-	margin-left: 30%;
+	margin-left: 38%;
 }
 #board::after{
 	content:"";
@@ -14,12 +19,39 @@ body{
 [id^=cell]{
 	height: 100px;
 	width:100px;
-	background-color: yellow;
-	border : 1px solid black;
+	
+	/*border : 1px solid black;*/
 	float: left;
+    text-align: center;
+    color: white;
+    font-size:30px;
+}
+[id^=cell]:hover{
+    background-color: #7e0000;
+}
+#cell0,#cell1,#cell3,#cell4{
+    border-bottom: 5px solid #ffbd00;
+    border-right: 5px solid #ffbd00;
+}
+#cell2,#cell5{
+    border-bottom: 5px solid #ffbd00;
+}
+#cell6,#cell7{
+    border-right: 5px solid #ffbd00;;
 }
 .row::after{
     content: "";	
     display: table;
     clear: both;
 }
+#displayWinner{
+    text-align: center;
+    font-size: 30px;
+    height: 70px;
+    padding-top: 3%;
+    
+    margin-top: 0;
+    margin-bottom: 0;
+    color: white;
+}
+
