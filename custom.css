@@ -1,5 +1,6 @@
 body{
 	background-color: #001b5c;
+    min-width: 500px;
 }
 #title{
     font-size: 50px;
@@ -9,7 +10,7 @@ body{
     margin-bottom: 0;
 }
 #board{
-	margin-left: 38%;
+	margin-left: 35%;
 }
 #board::after{
 	content:"";
@@ -54,4 +55,6 @@ body{
     margin-bottom: 0;
     color: white;
 }
-
+.fa:hover{
+    color: blue;
+}
