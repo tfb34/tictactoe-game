@@ -1,6 +1,6 @@
 body{
 	background-color: #001b5c;
-    min-width: 500px;
+    min-width: 1020px;
 }
 #title{
     font-size: 50px;
@@ -18,9 +18,10 @@ body{
 	display: table;
 }
 [id^=cell]{
-	height: 100px;
-	width:100px;
-	
+	/*height: 100px;
+	width:100px;*/
+	height:120px;
+    width:120px;
 	/*border : 1px solid black;*/
 	float: left;
     text-align: center;
@@ -55,6 +56,13 @@ body{
     margin-bottom: 0;
     color: white;
 }
-.fa:hover{
+#displayWinner span:hover{
     color: blue;
+}
+#github-link{
+    font-size: 50px;
+    position: static;
+    bottom: 50px;
+    margin-left: 50px;
+
 }
