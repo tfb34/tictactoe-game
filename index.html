@@ -14,6 +14,15 @@
 <body>
 	<p id="title">Tic-Tac-Toe</p>
 	<p id="displayWinner"></p>
+	<div id="startMenu">
+		<p id="singlePlayer" onclick="figureItOut('singlePlayer')" class="options">Single Player</p>
+		<p id="multiPlayer" onclick ="figureItOut('multiPlayer')" class="options">Multiplayer</p>
+	</div>
+	
+	<form id="playerForm">
+		Player 1's name:<br>
+		<input type="text" name="player1Name"><br>
+	</form>
 
 	<div id="board">
 		<div class="row">

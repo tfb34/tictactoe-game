@@ -11,6 +11,8 @@ body{
 }
 #board{
 	margin-left: 35%;
+    visibility: hidden;
+    margin-top: -230px;
 }
 #board::after{
 	content:"";
@@ -20,8 +22,8 @@ body{
 [id^=cell]{
 	/*height: 100px;
 	width:100px;*/
-	height:120px;
-    width:120px;
+	height:110px;
+    width:110px;
 	/*border : 1px solid black;*/
 	float: left;
     text-align: center;
@@ -58,6 +60,7 @@ body{
 }
 #displayWinner span:hover{
     color: blue;
+    cursor: pointer;
 }
 #github-link{
     font-size: 50px;
@@ -65,4 +68,29 @@ body{
     bottom: 50px;
     margin-left: 50px;
 
+}
+.options{
+    background-color: red;
+    width: 150px;
+    text-align: center;
+    cursor: pointer;
+    color: white;
+    padding-top: 1em;
+    padding-bottom: 1em;
+    border-radius: 10px;
+    margin-left: 45%;
+}
+
+.options:hover{
+    background-color: rgb(167,0,0);
+}
+#singlePlayer{
+    margin-top: 10%;
+}
+#playerForm{
+    visibility: hidden;
+    color: white;
+    position: absolute;
+    top: 50%;
+    left:40%;
 }

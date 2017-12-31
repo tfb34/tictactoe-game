@@ -1,7 +1,12 @@
+/*
 setTimeout(function(){
-    renderBoard();
+	renderBoard();
 }, 200);
+**/
 
+let singlePlayer = false;
+let player1;
+let player2;
 //define gameBoard module
 var Gameboard = (function(){
 	//cells = [[1,2,3],[4,5,6],[7,8,9]];
@@ -104,26 +109,24 @@ var gameController = (function(){
 })();
 
 //display the board
-
-// create players
-let player1 = Player("Player 1", "X");
-let player2 = Player("Player 2", "O");
-//when a player clicks on a cell what happens?
-// 	check if space is valid. if not, nothing happens. 
-// if valid, update array&board, check for win, next player's turn
 function renderBoard(){
+	console.log("hello");
+	document.getElementById("board").style.visibility = "visible";
+	displayCurrentPlayer();
+	//document.getElementById("startMenu").style.display = "none";
 	for(let i = 0;i<9;i++){
 		document.getElementById("cell"+i).addEventListener("click", playerMove);//don't forget to change this function
 	}
 }
 
-
-function test(){
-	console.log("worked");
-	console.log("!"+this.id[4]+"!");
+function displayCurrentPlayer(){
+	if(gameController._currPlayer == 1){
+		document.getElementById("displayWinner").innerHTML = player1.name +"( "+player1.token+" )";
+	}else{
+		document.getElementById("displayWinner").innerHTML = player2.name+"( "+player2.token+" )";
+	}
 }
-
-// here is where we make sense of who is playing
+//check if single play. this must have been clicked by player.
 function playerMove(){
 	let i = this.id[4];
 	//check if space is occupued
@@ -133,11 +136,8 @@ function playerMove(){
 	}else{
 		currPlayer = player2;
 	}
-
-	if(Gameboard.cells[i].length > 0){
-		console.log("cell is taken.Try again.");
-	}else{//player can move to selected cell
-		console.log("valid");
+// check if selected cell is valid
+	if(!(Gameboard.cells[i].length > 0)){
 		currPlayer.move(i);
 		//display on board
 		let p = document.createElement("p");
@@ -148,7 +148,14 @@ function playerMove(){
 		Gameboard.emptyCells--;
 
 		//check for win
-		if(gameController.check4Win(currPlayer)){
+		result(currPlayer);
+
+	}
+
+}
+
+function result(currPlayer){
+	if(gameController.check4Win(currPlayer)){
 			console.log("You won!");
 			document.getElementById('displayWinner').innerHTML = currPlayer.name+" Wins! ";
 			createReplayOption();
@@ -159,10 +166,8 @@ function playerMove(){
 			createReplayOption();
 		}else{
 			gameController.nextPlayer();
+			displayCurrentPlayer();
 		}
-
-	}
-
 }
 
 function createReplayOption(){
@@ -184,6 +189,57 @@ function disablePlayerMoves(){
 	}
 }
 
+function figureItOut(x){
+	document.getElementById('startMenu').style.visibility = "hidden";
+
+	let submit = document.createElement('input');
+	submit.type="button";
+	submit.value = "Submit"
+	submit.setAttribute("onclick","createPlayers()");
+	if(x == 'singlePlayer'){
+		document.getElementById('playerForm').append(submit);
+		document.getElementById('playerForm').style.visibility = "visible";
+	}else{
+		//create object for player. then append both player and submit
+
+		document.getElementById('playerForm').append("Player 2's name: ");
+
+		let b = document.createElement("br");
+
+		let p2 = document.createElement('input');
+		p2.type="text";
+		p2.name = "player2Name";
 
 
+		document.getElementById('playerForm').append(b,p2,submit);
+		document.getElementById('playerForm').style.visibility = "visible";
+	}
+}
+
+
+function createPlayers(){
+	let inputs = document.querySelectorAll("input");
+	console.log(inputs[0].value);
+	if(inputs[0].value){
+		player1 = Player(inputs[0].value, "X");
+	}else{
+		player1 = Player("Player 1", "X");
+	}
+
+	if(inputs[1].value == 'Submit'){
+		singlePlayer = true;
+		player2 = Player("Cosmo", "O");
+		//return or go somehwere else
+	}else{
+		if(inputs[1].value){
+			player2 = Player(inputs[1].value, "O");
+		}else{
+			player2 = Player("Player 2", "O");
+		}
+	}
+	
+	document.getElementById('playerForm').style.display = 'none';
+	renderBoard();
+
+}
 
