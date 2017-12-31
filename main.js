@@ -126,7 +126,46 @@ function displayCurrentPlayer(){
 		document.getElementById("displayWinner").innerHTML = player2.name+"( "+player2.token+" )";
 	}
 }
-//check if single play. this must have been clicked by player.
+//will utilize GameBoard.
+function getValidCells(){
+	let arr = [];
+	for(let c = 0;c<9;c++){
+		if(!Gameboard.cells[c]){
+			arr.push(c);
+		}
+	}
+	return arr;
+}
+
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+//cosmo will always be player2. you can change token or currPlayer later 
+function cosmoMove(){
+	//will have to choose an empty spot randomly
+
+	let validCells=getValidCells();
+
+	let i = getRandomInt(0,validCells.length-1);
+	// check for result
+	player2.move(i);
+	//display on board
+	let p = document.createElement("p");
+	p.innerHTML = player2.token;
+	document.getElementById("cell"+i).append(p);
+	//update array
+	Gameboard.cells[i] = player2.token;//maybe not neccessary unless playing with AI
+	Gameboard.emptyCells--;
+
+	//check for win
+	result(player2);
+	
+}
+
+//SOOOOO when cosmo is called. first disable all listening events on cell
+//after cosmo goes enable them;
+
+
 function playerMove(){
 	let i = this.id[4];
 	//check if space is occupued
@@ -149,10 +188,19 @@ function playerMove(){
 
 		//check for win
 		result(currPlayer);
-
+		if(!endGame){
+			if(singlePlayer){
+			console.log("count");
+			setTimeout(function(){
+			cosmoMove();;
+			}, 5000);
+		}
+		}
 	}
 
 }
+
+let endGame=false;
 
 function result(currPlayer){
 	if(gameController.check4Win(currPlayer)){
@@ -160,14 +208,20 @@ function result(currPlayer){
 			document.getElementById('displayWinner').innerHTML = currPlayer.name+" Wins! ";
 			createReplayOption();
 			disablePlayerMoves();
-		}else if(gameController.tie()){
+			endGame = true;
+	}else if(gameController.tie()){
 			console.log("Tie");
 			document.getElementById('displayWinner').innerHTML = "It's a tie! ";
 			createReplayOption();
-		}else{
-			gameController.nextPlayer();
-			displayCurrentPlayer();
-		}
+			endGame = true;
+	}else{
+		gameController.nextPlayer();
+		displayCurrentPlayer();
+		//Take this out of here. need a variable stating if there
+		//is a win THEN do the following.
+		//for some reason this keeps repeating even without being called
+		
+	}
 }
 
 function createReplayOption(){
