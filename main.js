@@ -1,20 +1,28 @@
-/*
-setTimeout(function(){
-	renderBoard();
-}, 200);
-**/
 
 let singlePlayer = false;
 let player1;
 let player2;
+let gameLevel = "expert";
+//Machine will always be player2. you can change token or currPlayer later... maybe
+
 //define gameBoard module
 var Gameboard = (function(){
 	//cells = [[1,2,3],[4,5,6],[7,8,9]];
 	emptyCells= 9;
 	cells = ["","","","","","","","",""];
+
+	function clean(){
+		this.cells = ["","","","","","","","",""];
+		this.emptyCells = 9;
+		for(let i=0;i<9;i++){
+			document.getElementById("cell"+i).innerHTML="";
+			document.getElementById("cell"+i).className="";
+		}
+	};
 	return{
 		cells,
-		emptyCells
+		emptyCells,
+		clean
 	}
 })();
 
@@ -28,20 +36,27 @@ const Player = (name,token) =>{
 		this.turns+=1;
 	};
 
+	startOver = function(){
+		this.moves = ["","","","","","","","",""];
+		this.turns = 0;
+	};
+
 	return{
 		name,
 		token,
 		moves,
 		turns,
-		move
+		move,
+		startOver
 	}
 };
 
-
+// module
 var gameController = (function(){
-	//check for a win
+
+ /* multiplayer functions */
+
 	function check4Win(player){
-		console.log(player.name);
 		//time to check for win or tie
 		if(player.turns>2){
 			console.log("checking for win");
@@ -75,15 +90,17 @@ var gameController = (function(){
 			}
 
 			if(indices){
-				document.getElementById("cell"+indices[0]).style.background= "pink";
-				document.getElementById("cell"+indices[1]).style.background= "pink";
-				document.getElementById("cell"+indices[2]).style.background= "pink";
+				//classList not supported by IE
+				document.getElementById("cell"+indices[0]).className ="winColor";
+				//document.getElementById("cell"+indices[0]).style.background= "pink";
+				document.getElementById("cell"+indices[1]).className ="winColor";
+				document.getElementById("cell"+indices[2]).className ="winColor";
 				return true;
 			}
 			return false;
 		}
 	};
-	// no winner, all spaces occupied
+
 	function tie(){
 		console.log("   checking for tie")
 		if(Gameboard.emptyCells == 0){
@@ -100,23 +117,69 @@ var gameController = (function(){
 		}
 	};
 
+ /* single player functions*/
+
+	function draw(){
+		for(let i = 0; i<9;i++){
+			if(Gameboard.cells[i] == ""){
+				return false;
+			}
+		}
+		return true;
+	}
+
+	function win(token){
+		let board = Gameboard.cells;
+		//horizontal win
+		for(let i = 0; i<9; i+=3){
+			if(board[i]==token && board[i] == board[i+1] && board[i+1] == board[i+2]){
+				return true;
+			}
+		}
+		//vertical win
+		for(let i=0;i<3;i++){
+			if(board[i]==token && board[i] == board[i+3] && board[i+3] == board[i+6]){
+				return true;
+			}
+		}
+		//diagonal win
+		if(board[0]==token && board[0]==board[4] && board[4]==board[8]){
+			return true;
+		}
+		if(board[2]==token && board[2]==board[4] && board[4]==board[6]){
+			return true;
+		}
+		return false;
+	};
+
 	return{
 		_currPlayer : 1, //null
 		nextPlayer,
 		check4Win,
-		tie
+		tie,
+		win,
+		draw
 	}
 })();
 
+
+function evaluateScore(){
+
+	let score = 0;// no winner
+
+	if(gameController.win("O")){
+		score = -10;// minimizer wins
+	}else if(gameController.win("X")){
+		score = 10;// maximizer wins
+	}
+	return score;
+}
+
 //display the board
 function renderBoard(){
-	console.log("hello");
 	document.getElementById("board").style.visibility = "visible";
 	displayCurrentPlayer();
-	//document.getElementById("startMenu").style.display = "none";
-	for(let i = 0;i<9;i++){
-		document.getElementById("cell"+i).addEventListener("click", playerMove);//don't forget to change this function
-	}
+	enablePlayerMoves();
 }
 
 function displayCurrentPlayer(){
@@ -140,21 +203,26 @@ function getValidCells(){
 function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
-//cosmo will always be player2. you can change token or currPlayer later 
-function cosmoMove(){
-	//will have to choose an empty spot randomly
 
-	let validCells=getValidCells();
 
-	let i = getRandomInt(0,validCells.length-1);
-	// check for result
-	player2.move(i);
-	//display on board
+function AIMove(){
+	let pos;
+	//game level
+	if(gameLevel == "novice"){
+		pos = findNoviceMove();
+	}else if(gameLevel == "expert"){
+		pos = findBestMove();// by default, AI plays second
+	}
+
+	player2.move(pos);
+
+	//display move
 	let p = document.createElement("p");
 	p.innerHTML = player2.token;
-	document.getElementById("cell"+i).append(p);
-	//update array
-	Gameboard.cells[i] = player2.token;//maybe not neccessary unless playing with AI
+	document.getElementById("cell"+pos).append(p);
+
+	//update gameboard
+	Gameboard.cells[pos] = player2.token;
 	Gameboard.emptyCells--;
 
 	//check for win
@@ -162,14 +230,102 @@ function cosmoMove(){
 	
 }
 
-//SOOOOO when cosmo is called. first disable all listening events on cell
-//after cosmo goes enable them;
 
+//SOOOOO when AI is called. first disable all listening events on cell
+//after AI goes enable them;
+
+function minimax(depth, maximizingPlayer){
+
+	let score = evaluateScore();
+
+	// no more moves can be played, return score
+
+	if(score == 10){ // maximizer's win
+		return score-depth;
+	}
+	if(score == -10){// minimizer's win
+		return score+depth;
+	}
+	if(getValidCells().length == 0){ // tie
+		return 0;
+	}
+
+	if(maximizingPlayer){
+		let validCells = getValidCells();
+		let value = null;
+		let bestValue = -1000;// arbitrary small #
+		for(let i=0;i<validCells.length;i++){
+			// make move
+			Gameboard.cells[validCells[i]] = player1.token;
+			// obtain score of such move
+			value = minimax(depth+1, false);
+			// update bestValue
+			if(value> bestValue){
+				bestValue = value;
+			}
+			// undo move
+			Gameboard.cells[validCells[i]] = "";
+		}
+		return bestValue;
+	}else{
+		let validCells = getValidCells();
+		let value = null;
+		let bestValue = 1000;// arbitrary large #
+		for(let i=0;i<validCells.length;i++){
+			//make move
+			Gameboard.cells[validCells[i]] = player2.token;
+			//minimax
+			value = minimax(depth+1,true);
+			if(value < bestValue){
+				bestValue = value;
+			}
+			// undo move
+			Gameboard.cells[validCells[i]] = "";
+		}
+		return bestValue;
+	}
+}
+
+/* If AI goes first then maximizingPlayer=true
+	Else it goes second; maximizingPlayer= false
+*/
+function findBestMove(){
+
+	let validCells = getValidCells();
+	let bestMove = null;
+	let bestValue = 1000;
+	let value =null;
+	for(let i = 0;i<validCells.length;i++){
+
+		//make the move
+		Gameboard.cells[validCells[i]] = player2.token; 
+		value = minimax(1, true);// true because your move depends on the best score of maximizer.
+
+		/*below you are minimizing or finding the smallest score from maximizer;
+		works only if AI is playing defensive/minimizer*/
+		if(value < bestValue){
+			bestMove = validCells[i];
+			bestValue = value;
+		}
+		//undo the move
+		Gameboard.cells[validCells[i]] = "";
+	}
+	return bestMove;
+}
+
+//game level: beginner
+function findNoviceMove(){
+	let validCells = getValidCells();
+	let i = getRandomInt(0,validCells.length-1);
+	return validCells[i];
+}
 
 function playerMove(){
+	console.log("player1 has moved")
 	let i = this.id[4];
 	//check if space is occupued
 	let currPlayer;
+
 	if(gameController._currPlayer == 1){
 		currPlayer = player1;
 	}else{
@@ -190,11 +346,12 @@ function playerMove(){
 		result(currPlayer);
 		if(!endGame){
 			if(singlePlayer){
-			console.log("count");
-			setTimeout(function(){
-			cosmoMove();;
-			}, 5000);
-		}
+				//take away player1 ability to click
+				disablePlayerMoves();
+				console.log("should have disablePlayerMoves");
+				console.log("AI is thinking...");
+				setTimeout(function(){AIMove();}, 3000);
+			}
 		}
 	}
 
@@ -204,42 +361,67 @@ let endGame=false;
 
 function result(currPlayer){
 	if(gameController.check4Win(currPlayer)){
-			console.log("You won!");
 			document.getElementById('displayWinner').innerHTML = currPlayer.name+" Wins! ";
 			createReplayOption();
+			createStartMenuOption();
 			disablePlayerMoves();
 			endGame = true;
 	}else if(gameController.tie()){
-			console.log("Tie");
-			document.getElementById('displayWinner').innerHTML = "It's a tie! ";
+			document.getElementById('displayWinner').innerHTML = "It's a draw! ";
 			createReplayOption();
+			createStartMenuOption();
 			endGame = true;
 	}else{
 		gameController.nextPlayer();
 		displayCurrentPlayer();
-		//Take this out of here. need a variable stating if there
-		//is a win THEN do the following.
-		//for some reason this keeps repeating even without being called
-		
+		enablePlayerMoves();
 	}
 }
 
 function createReplayOption(){
+
 	let span=document.createElement('span');
-	span.innerHTML = "replay &#xf01e;";
+	span.innerHTML = "replay &#xf01e;    ";
 	span.className="fa";
 	span.setAttribute("onclick", "replay()");
 
+	let br = document.createElement('br');
+	document.getElementById('displayWinner').append(br);
 	document.getElementById('displayWinner').append(span);
 }
 
+function createStartMenuOption(){
+	let span = document.createElement('span');
+	span.innerHTML = "Start Menu";
+	span.className="startMenu";
+	span.setAttribute("onclick", "startMenu()");
+
+	document.getElementById('displayWinner').append(span);
+}
+// if single game
 function replay(){
+	//clean players, and main board
+	Gameboard.clean();
+	player1.startOver();
+	player2.startOver();
+	gameController._currPlayer = 1;
+	endGame=false;
+	renderBoard();
+}
+
+function startMenu(){
 	window.location.reload(true);
 }
 
 function disablePlayerMoves(){
 	for(let i = 0;i<9;i++){
 		document.getElementById("cell"+i).removeEventListener("click", playerMove);//don't forget to change this function
+	}
+}
+
+function enablePlayerMoves(){
+	for(let i = 0;i<9;i++){
+		document.getElementById("cell"+i).addEventListener("click", playerMove);//don't forget to change this function
 	}
 }
 
@@ -282,8 +464,7 @@ function createPlayers(){
 
 	if(inputs[1].value == 'Submit'){
 		singlePlayer = true;
-		player2 = Player("Cosmo", "O");
-		//return or go somehwere else
+		player2 = Player("Roy", "O");
 	}else{
 		if(inputs[1].value){
 			player2 = Player(inputs[1].value, "O");
