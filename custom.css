@@ -31,9 +31,7 @@ body{
     color: white;
     font-size:30px;
 }
-.winColor{
-    background-color: pink;
-}
+
 [id^=cell]:hover{
     background-color: #7e0000;
 }
@@ -73,6 +71,7 @@ body{
     margin-left: 50px;
 
 }
+/*single , multiplayer options*/
 .options{
     background-color: red;
     width: 150px;
@@ -98,4 +97,5 @@ body{
 }
 span{
     padding:20px;
+    border-radius: 5px;
 }

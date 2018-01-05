@@ -16,7 +16,7 @@ var Gameboard = (function(){
 		this.emptyCells = 9;
 		for(let i=0;i<9;i++){
 			document.getElementById("cell"+i).innerHTML="";
-			document.getElementById("cell"+i).className="";
+			document.getElementById("cell"+i).style.background="";
 		}
 	};
 	return{
@@ -91,10 +91,10 @@ var gameController = (function(){
 
 			if(indices){
 				//classList not supported by IE
-				document.getElementById("cell"+indices[0]).className ="winColor";
-				//document.getElementById("cell"+indices[0]).style.background= "pink";
-				document.getElementById("cell"+indices[1]).className ="winColor";
-				document.getElementById("cell"+indices[2]).className ="winColor";
+				//document.getElementById("cell"+indices[0]).className ="winColor";
+				document.getElementById("cell"+indices[0]).style.background= "#7979A8";
+				document.getElementById("cell"+indices[1]).style.background= "#7979A8";
+				document.getElementById("cell"+indices[2]).style.background= "#7979A8";
 				return true;
 			}
 			return false;
